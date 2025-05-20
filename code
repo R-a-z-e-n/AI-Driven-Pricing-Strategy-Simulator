@@ -1,0 +1,204 @@
+# ------------------- Install Dependencies -------------------
+!pip install ipywidgets pandas matplotlib scikit-learn tensorflow
+
+# ------------------- Imports -------------------
+import ipywidgets as widgets
+from IPython.display import display
+import pandas as pd
+import io
+import random
+import time
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.cluster import KMeans
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.optimizers import Adam
+
+# ------------------- UI Components -------------------
+algorithm_dropdown = widgets.Dropdown(
+    options=[
+        'DQN', 'PPO', 'SAC', 'A2C', 'Q-Learning', 'Dyna-Q', 'MADDPG', 'Multi-Agent PPO',
+        'Conservative Q Learning', 'MBPO', 'Dreamer', 'PETS',
+        'Pricing Simulator RL',
+        'Customer Support Bot',
+        'Lead Scoring System'
+    ],
+    description='Algorithm:',
+    layout=widgets.Layout(width='350px')
+)
+
+task_dropdown = widgets.Dropdown(
+    options=[
+        'CartPole', 'DroneFlight', 'MapNavigation', 'StrategyGame', 'SelfDrivingCar',
+        'TrainingFromLogs', 'PlanningViaModels',
+        'PricingStrategy', 'CustomerSupport', 'LeadScoring'
+    ],
+    description='Task:',
+    layout=widgets.Layout(width='350px')
+)
+
+file_upload = widgets.FileUpload(
+    accept='.csv',
+    multiple=False,
+    description='Upload CSV',
+    layout=widgets.Layout(width='350px')
+)
+
+run_button = widgets.Button(description="Run", button_style='success')
+output_area = widgets.Output()
+
+# ------------------- Task Implementations -------------------
+
+def run_pricing_simulator_rl(dataset=None):
+    # Dummy simple RL environment simulation for pricing
+    print("⚙️ Starting Pricing Strategy Simulator with RL...")
+    prices = [10, 15, 20, 25, 30]
+    inventory = 100
+    revenue = 0
+
+    for episode in range(1, 21):
+        price = random.choice(prices)  # Random price action - replace with RL action
+        demand = max(0, int(50 - price + random.gauss(0, 5)))  # Simple demand model
+        sold = min(demand, inventory)
+        inventory -= sold
+        revenue += sold * price
+        print(f"Episode {episode}: Price=${price}, Sold={sold}, Inventory left={inventory}, Revenue=${revenue}")
+        time.sleep(0.2)
+        if inventory <= 0:
+            print("Inventory depleted!")
+            break
+    print(f"✅ Pricing Simulator finished with total revenue: ${revenue}")
+
+def run_customer_support_bot(dataset=None):
+    # Simple supervised classification simulation for issue classification
+    print("⚙️ Running Customer Support Bot training simulation...")
+
+    if dataset is None:
+        print("⚠️ No dataset provided. Using simulated data.")
+        # Simulate dataset: features + issue type
+        np.random.seed(0)
+        X = np.random.rand(200, 5)
+        y = np.random.choice([0, 1, 2], 200)  # 3 classes of issues
+    else:
+        # Expect dataset with last column as label for classification
+        X = dataset.iloc[:, :-1].values
+        y = dataset.iloc[:, -1].values
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+
+    model = RandomForestClassifier(n_estimators=50)
+    model.fit(X_train, y_train)
+
+    print("Model trained. Evaluating on test data...")
+    y_pred = model.predict(X_test)
+    report = classification_report(y_test, y_pred)
+    print(report)
+
+    # Simulate retraining loop weekly (just a quick print here)
+    for week in range(1, 4):
+        print(f"Week {week}: Collecting feedback and retraining model...")
+        time.sleep(1)
+    print("✅ Customer Support Bot training and feedback loop simulation complete.")
+
+def run_lead_scoring_system(dataset=None):
+    # Clustering + supervised pipeline for lead scoring
+    print("⚙️ Running Intelligent Lead Scoring System pipeline...")
+
+    if dataset is None:
+        print("⚠️ No dataset provided. Using simulated data.")
+        np.random.seed(0)
+        X = np.vstack([
+            np.random.normal(loc=0.0, scale=1.0, size=(100, 5)),
+            np.random.normal(loc=5.0, scale=1.5, size=(100, 5))
+        ])
+        y = np.array([0]*100 + [1]*100)  # Binary label for high/low conversion potential
+    else:
+        X = dataset.iloc[:, :-1].values
+        y = dataset.iloc[:, -1].values
+
+    # Step 1: Clustering (segmentation)
+    kmeans = KMeans(n_clusters=2)
+    clusters = kmeans.fit_predict(X)
+    print(f"Clusters identified: {np.unique(clusters)}")
+
+    # Step 2: Supervised model to predict conversion within clusters
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25)
+    model = RandomForestClassifier(n_estimators=100)
+    model.fit(X_train, y_train)
+    y_pred = model.predict(X_test)
+
+    print("Lead scoring model classification report:")
+    print(classification_report(y_test, y_pred))
+
+    # Visualize clusters (2D PCA)
+    from sklearn.decomposition import PCA
+    pca = PCA(n_components=2)
+    X_2d = pca.fit_transform(X)
+    plt.figure(figsize=(6,4))
+    plt.scatter(X_2d[:, 0], X_2d[:, 1], c=clusters, cmap='viridis', alpha=0.6)
+    plt.title("Lead Segmentation Clusters")
+    plt.xlabel("PCA 1")
+    plt.ylabel("PCA 2")
+    plt.show()
+
+    print("✅ Lead Scoring System pipeline complete.")
+
+# ------------------- Main Runner -------------------
+def run_algorithm(algo, task, dataset):
+    """
+    Function to run the selected algorithm on the selected task.
+    Displays output in UI.
+    """
+    print(f"\n✅ Running {algo} on {task}...\n")
+
+    # Reinforcement learning simulations - keep original for those tasks
+    if task in ['CartPole', 'DroneFlight', 'MapNavigation', 'StrategyGame', 'SelfDrivingCar', 'TrainingFromLogs', 'PlanningViaModels']:
+        # Just simulate RL training progress (from previous code)
+        for i in range(1, 21):
+            reward = random.randint(0, 100) + i*5
+            print(f"Episode {i}: Reward = {reward}")
+            time.sleep(0.1)
+        print(f"✅ {algo} completed training on {task}!")
+
+    # Custom integrated tasks
+    elif task == 'PricingStrategy':
+        run_pricing_simulator_rl(dataset)
+
+    elif task == 'CustomerSupport':
+        run_customer_support_bot(dataset)
+
+    elif task == 'LeadScoring':
+        run_lead_scoring_system(dataset)
+
+    else:
+        print(f"⚠️ Task '{task}' not recognized or implemented yet.")
+
+# ------------------- File Upload Handler -------------------
+def on_run_button_clicked(b):
+    output_area.clear_output()
+    with output_area:
+        dataset = None
+        if file_upload.value:
+            uploaded_file = list(file_upload.value.values())[0]
+            content = uploaded_file['content']
+            try:
+                dataset = pd.read_csv(io.BytesIO(content))
+                print("✅ Dataset loaded successfully.")
+            except Exception as e:
+                print(f"❌ Failed to load dataset: {e}")
+                dataset = None
+        else:
+            print("⚠️ No dataset provided. Proceeding with simulated data where applicable.")
+
+        selected_algo = algorithm_dropdown.value
+        selected_task = task_dropdown.value
+        run_algorithm(selected_algo, selected_task, dataset)
+
+run_button.on_click(on_run_button_clicked)
+
+# ------------------- Display UI -------------------
+display(widgets.VBox([algorithm_dropdown, task_dropdown, file_upload, run_button, output_area]))
